@@ -5,9 +5,6 @@ library(openxlsx)
 library(ggpubr)
 library(gridExtra)
 
-
-setwd("/Users/rampan/OneDrive-KI.SE/OneDrive-KI.SE/Mac/Documents/proj/KI/Jenny/10Xseq_data/github")
-
 outdir="Results"
 dir.create(file.path(outdir), showWarnings = FALSE)
 #setwd(outdir)
