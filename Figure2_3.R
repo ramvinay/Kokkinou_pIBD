@@ -442,3 +442,190 @@ plot_file1 <- paste(output_prefix,"Figure_3I.jpeg",sep = "_")
 jpeg(filename = plot_file1, width = 11, height = 8, units = "in",res=400)
 ggarrange(plot_list[[1]], ncol=1)
 dev.off()
+
+
+
+#### Suppl. Figure S2-B
+
+subset_data1 <- subset_data
+clusters_louvain_subset2 <- vector("logical", length = ncol(subset_data1))
+names(clusters_louvain_subset2) <- colnames(subset_data1)
+head(subset_data1@meta.data)
+
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="1"] <- "8"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="2"] <- "2"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="3"] <- "12"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="4"] <- "4"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="5"] <- "5"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="6"] <- "6"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="7"] <- "10"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="8"] <- "7"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="9"] <- "9"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="10"] <- "11"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="11"] <- "1"
+clusters_louvain_subset2[subset_data1@meta.data$clusters_louvain_subset1=="12"] <- "3"
+
+subset_data1[["clusters_louvain_subset2"]] <- clusters_louvain_subset2
+head(subset_data1@meta.data)
+
+
+cluster_cell <- as.data.frame(subset_data1@meta.data)
+head(cluster_cell)
+
+cluster_cell$Cell_ID <- row.names(cluster_cell)
+head(cluster_cell)
+
+unique(cluster_cell$clusters_louvain_subset2)
+cluster1_cell_summary1 <- ddply(cluster_cell, .(clusters_louvain_subset2), summarize, Total_Cell_Count_In_Cluster = length(Cell_ID))
+head(cluster1_cell_summary1)
+
+
+head(cluster_cell)
+
+######################################
+cluster1_cell_summary3 <- ddply(cluster_cell, .(clusters_louvain_subset2,donor1), summarize, Each_Sample_Cell_Count_In_Cluster = length(Cell_ID))
+
+cluster1_cell_summary3
+
+all_cluster_cell_df1 <- merge(cluster1_cell_summary1,cluster1_cell_summary3,by="clusters_louvain_subset2")
+head(all_cluster_cell_df1)
+colnames(all_cluster_cell_df1)[3]<-"Donor"
+all_cluster_cell_df1$Percent <- (all_cluster_cell_df1$Each_Sample_Cell_Count_In_Cluster/all_cluster_cell_df1$Total_Cell_Count_In_Cluster)*100
+
+
+
+all_cluster_cell_df1$clusters_louvain_subset2 <- factor(all_cluster_cell_df1$clusters_louvain_subset2, levels = c("1","2","3","4","5","6","7","8","9","10","11","12"))
+all_cluster_cell_df1$Donor <- factor(x = all_cluster_cell_df1$Donor, levels = c("D1", "D6","D10","D11","D16","D19")) # change the order of the factor levels
+
+p4 <- ggplot() + geom_bar(aes(y = Percent, x = as.factor(clusters_louvain_subset2), fill = Donor), data = all_cluster_cell_df1,
+                          stat="identity")+
+  #scale_fill_manual(name="Sample",values=sample_col)+
+  xlab("Cluster")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text=element_text(size=18, face = "plain"),
+        axis.title=element_text(size=20, face = "plain"),
+        legend.text=element_text(size=16,face="plain"),
+        legend.title=element_text(size=20,face="plain"))
+
+p4
+
+
+plot_file1 <- paste(output_prefix,"_Suppl_Figure_2S_B1.jpeg",sep = "")
+
+jpeg(filename = plot_file1, width = 8, height = 6, units = "in",res=400)
+print(p4)
+dev.off()
+
+all_cluster_cell_df <- cluster1_cell_summary3
+colnames(all_cluster_cell_df) <- c("Cluster","Donor", "Cell_Count")
+write.table(all_cluster_cell_df, file = paste(output_prefix,"_Suppl_Figure_2S_B1.txt",sep = ""), append = F, quote = F, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = F, col.names = T, qmethod = c("escape", "double"))
+
+#################### Suppl_Figure_2S_B2
+cluster1_cell_summary1 <- ddply(cluster_cell, .(donor1), summarize, Total_Cell_Count_In_Cluster = length(Cell_ID))
+head(cluster1_cell_summary1)
+
+cluster1_cell_summary3 <- ddply(cluster_cell, .(donor1,clusters_louvain_subset2), summarize, Each_Sample_Cell_Count_In_Cluster = length(Cell_ID))
+cluster1_cell_summary3
+
+all_cluster_cell_df1 <- merge(cluster1_cell_summary1,cluster1_cell_summary3,by="donor1")
+head(all_cluster_cell_df1)
+colnames(all_cluster_cell_df1)[1]<-"Donor"
+colnames(all_cluster_cell_df1)[3]<-"Cluster"
+all_cluster_cell_df1$Percent <- (all_cluster_cell_df1$Each_Sample_Cell_Count_In_Cluster/all_cluster_cell_df1$Total_Cell_Count_In_Cluster)*100
+
+
+
+all_cluster_cell_df1$Cluster <- factor(all_cluster_cell_df1$Cluster, levels = c("1","2","3","4","5","6","7","8","9","10","11","12"))
+all_cluster_cell_df1$Donor <- factor(x = all_cluster_cell_df1$Donor, levels = c("D1", "D6","D10","D11","D16","D19")) # change the order of the factor levels
+
+p4 <- ggplot() + geom_bar(aes(y = Percent, x = as.factor(Donor), fill = Cluster), data = all_cluster_cell_df1,
+                          stat="identity")+
+  #scale_fill_manual(name="Sample",values=sample_col)+
+  xlab("Cluster")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text=element_text(size=18, face = "plain"),
+        axis.title=element_text(size=20, face = "plain"),
+        legend.text=element_text(size=16,face="plain"),
+        legend.title=element_text(size=20,face="plain"))
+
+p4
+
+
+plot_file1 <- paste(output_prefix,"_Suppl_Figure_2S_B2.jpeg",sep = "")
+
+jpeg(filename = plot_file1, width = 8, height = 6, units = "in",res=400)
+print(p4)
+dev.off()
+
+all_cluster_cell_df <- cluster1_cell_summary3
+colnames(all_cluster_cell_df) <- c("Donor","Cluster", "Cell_Count")
+write.table(all_cluster_cell_df, file = paste(output_prefix,"_Suppl_Figure_2S_B2.txt",sep = ""), append = F, quote = F, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = F, col.names = T, qmethod = c("escape", "double"))
+
+
+###################################### Suppl_Figure_2S_B3
+cluster1_cell_summary3 <- ddply(cluster_cell, .(clusters_louvain_subset2,orig.ident), summarize, Each_Sample_Cell_Count_In_Cluster = length(Cell_ID))
+
+cluster1_cell_summary3
+
+all_cluster_cell_df1 <- merge(cluster1_cell_summary1,cluster1_cell_summary3,by="clusters_louvain_subset2")
+head(all_cluster_cell_df1)
+colnames(all_cluster_cell_df1)[3]<-"Sample"
+all_cluster_cell_df1$Percent <- (all_cluster_cell_df1$Each_Sample_Cell_Count_In_Cluster/all_cluster_cell_df1$Total_Cell_Count_In_Cluster)*100
+
+
+
+
+sample_col <- c("JMJ01_1n"="#feb743",
+                "JMJ02_1i"="#cae63b",
+                "JMJ07_19n"="#9c79b4",
+                "JMJ08_19i"="#ff58c0",
+                "JMJ03_16n"="#4ad2d6",
+                "JMJ04_16i"="#823acb",
+                "JMJ05_6n"="#e46c71",
+                "JMJ06_6i"="#121163",
+                "JMJ09_10n"="#f342d8",
+                "JMJ10_10i"="#669966",
+                "JMJ11_11n"="#ff954e",
+                "JMJ12_11i"="#326ada")
+
+
+
+all_cluster_cell_df1$clusters_louvain_subset2 <- factor(all_cluster_cell_df1$clusters_louvain_subset2, levels = c("1","2","3","4","5","6","7","8","9","10","11","12"))
+
+
+p4 <- ggplot() + geom_bar(aes(y = Percent, x = as.factor(clusters_louvain_subset2), fill = Sample), data = all_cluster_cell_df1,
+                          stat="identity")+
+  scale_fill_manual(name="Sample",values=sample_col)+
+  xlab("Cluster")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text=element_text(size=18, face = "plain"),
+        axis.title=element_text(size=20, face = "plain"),
+        legend.text=element_text(size=16,face="plain"),
+        legend.title=element_text(size=20,face="plain"))
+
+p4
+
+
+
+plot_file1 <- paste(output_prefix,"_Suppl_Figure_2S_B3.jpeg",sep = "")
+
+jpeg(filename = plot_file1, width = 8, height = 6, units = "in",res=400)
+print(p4)
+dev.off()
+
+all_cluster_cell_df <- cluster1_cell_summary3
+colnames(all_cluster_cell_df) <- c("Cluster","Sample", "Cell_Count")
+write.table(all_cluster_cell_df, file = paste(output_prefix,"_Suppl_Figure_2S_B3.txt",sep = ""), append = F, quote = F, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = F, col.names = T, qmethod = c("escape", "double"))
+
+
+
+(B) Stacked bar plot showing the contribution of each donor (n = 6) to
+the clusters shown in Figure 2B (left and middle). Stacked bar plot showing the contribution of each colon biopsy
+sample (n = 12) to the clusters shown in Figure 2B (right). Cells from each donor were analyzed in independent
+experiments.

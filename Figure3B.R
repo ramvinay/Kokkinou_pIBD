@@ -263,3 +263,21 @@ circos.clear()
 dev.off()
 
 
+######### Suppl. figure S3 A-G
+pbmc.sub2.module <- readRDS("Data/50_pbmc.sub2.module.rds")
+
+feats <- rownames(pbmc.sub2.module@assays$modules@data)
+feats <- c("1","11","43","8","19","26","7","20","18","22","30")
+for(i in feats){ 
+  #pdf( paste(outdir2,"/",k,"_module",i,"_genes_umap_blue1.pdf",sep = ""),width = 6,height = 6, useDingbats=FALSE)
+  plot_file1 <- paste(output_prefix,"_Figure_S3_A_to_G_module_",i,".jpeg",sep = "")
+  jpeg(filename = plot_file1, width = 4, height = 4, units = "in",res=400)
+
+  plot_feat(pbmc.sub2.module, feat = i , assay="modules", 
+            col = c("grey95","grey70","#99B1FF","#003CFF"),
+            add_legend=T,cex = 0.2)
+  #  print(plot_feat(subset_data_sub,feat = g1, add_legend=T,cex = 0.4))
+
+  dev.off()
+}
+
